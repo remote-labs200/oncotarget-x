@@ -1,34 +1,51 @@
 # OncoTarget-X: AI Precision Oncology & Drug Repurposing Platform
 
-A clinician or researcher inputs a patient's tumor gene expression profile, and the app instantly renders a 3D interactive protein-ligand binding visualization alongside ranked FDA-approved drugs for precision off-label therapy.
+## Executive Summary
 
-Traditional molecular docking pipelines take hours on HPC clusters. By leveraging lightweight pre-computed affinity models and modern JS visualization frameworks (like 3Dmol.js), it yields instant 3D docking preview results in 10 seconds.
-
-## Project Architecture & Setup
-
-### Frontend (The Visual Demo)
-- **Core UI:** Next.js / React styled with a clean dark mode or glassmorphism aesthetic.
-- **3D Viewer:** Integrate 3Dmol.js or NGL Viewer canvas to render PDB (Protein Data Bank) molecular structures and binding pockets interactively.
-
-### Backend & Data Layer
-- **Database:** A pre-indexed local SQLite database or FastAPI serving pre-computed affinity scores, FDA drug data (PubChem/DrugBank IDs), and TCGA gene expression profiles.
-- **Scoring Engine:** Python script utilizing RDKit or pre-computed binding energy matrix to rapidly output top candidate drug matches without stalling during live presentations.
+Traditional molecular docking pipelines and drug discovery cycles take over 10 years and billions of dollars, often stalling on high-performance computing (HPC) clusters. **OncoTarget-X** bridges this gap by leveraging lightweight pre-computed binding affinity models, live biomedical APIs (PubChem, ChEMBL, RCSB PDB), and WebGL visualization to render actionable therapeutic insights in under 10 seconds.
 
 ---
 
-## Core Features for the Exhibition Booth
+## 🏛️ System Architecture & Data Flow
 
-1. **Interactive Gene/Target Lookup:** 
-   - A search input where judges can pick a cancer target (e.g., `EGFR`, `BRAF`, `TP53`).
+```mermaid
+sequenceDiagram
+    participant User as Clinician / Researcher
+    participant Frontend as Next.js 16 UI
+    participant API as Next.js API Routes / RDKit Engine
+    participant PubChem as PubChem / ChEMBL / PDB APIs
 
-2. **Instant 3D Docking Visualizer:** 
-   - Displays the target protein structure and automatically zooms/highlights candidate drug molecules inside the active binding pocket.
+    User->>Frontend: Input Patient Tumor Profile & Select Gene (e.g. EGFR)
+    Frontend->>API: Initiate 10-Second Docking Simulation
+    API->>PubChem: Fetch 3D SDF Ligand Coordinates & Bioactivity (IC50 / Ki)
+    PubChem-->>API: Return Chemical Properties & Assay Records
+    API->>PubChem: Fetch RCSB PDB Crystal Structure (Protein Receptor)
+    PubChem-->>API: Return PDB Coordinates
+    API-->>Frontend: Stream Docking Matrix & Thermodynamic Scores (ΔG kcal/mol)
+    Frontend->>User: Render Interactive 3D Docking Viewer & Ranked Off-Label Drugs
+```
 
-3. **Ranked Drug Repurposing Table:** 
-   - A clean table showing:
-     - Drug Name & FDA Status (e.g., approved for target X, proposed off-label for target Y)
-     - Affinity Score / Binding Energy
-     - Mechanism of Action
+---
 
-4. **PDF Report Generator:** 
-   - A 1-click button to export a "Precision Oncology Patient Report" with your team's branding.
+## 🔬 Core Components & Modules
+
+### 1. Biomarker Input & Ingestion (`app/components/LandingHero.tsx`)
+- Accepts patient tumor RNA-Seq matrices, VCF variant files, or custom FASTA sequences.
+- Dynamic biomarker selector supporting `EGFR`, `BRAF`, `TP53`, `KRAS`, and `ALK`.
+
+### 2. WebGL 3D Molecular Docking Engine (`app/components/MolecularViewer.tsx`)
+- Integrates **3Dmol.js** to render protein-ligand complexes.
+- Real-time switching between `Cartoon`, `Stick`, `Sphere`, and `VDW Surface` rendering modes.
+- Automated active-pocket camera focus.
+
+### 3. Ranked Off-Label Repurposing Matrix (`app/components/DrugTable.tsx`)
+- Focuses on approved non-oncology or cross-indication compounds (antifungals, anti-arrhythmics, anti-inflammatories).
+- Ranks candidates by thermodynamic binding energy ($ΔG \le -9.0\text{ kcal/mol}$).
+
+### 4. Bioactivity & Analytics (`app/components/ChemblBioactivityCard.tsx` & `ExpressionChart.tsx`)
+- Pulls EMBL-EBI ChEMBL assay records ($IC_{50}$, $K_i$).
+- Visualizes binding affinity and efficacy distributions.
+
+### 5. Clinical AI Assistant & PDF Reporting (`app/components/GeminiAssistant.tsx` & `PatientReportModal.tsx`)
+- Google Gemini-powered clinical reasoning.
+- 1-click export of structured patient precision oncology reports.
