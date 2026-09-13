@@ -19,15 +19,15 @@ export async function GET(request: Request) {
         const searchData = await searchRes.json();
         const cid = searchData.IdentifierList?.CID?.[0] || 123631;
 
-        // Fetch compound properties
+        // Fetch compound properties (identity + ADME descriptors)
         const propRes = await fetch(
-            `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/property/IUPACName,MolecularFormula,MolecularWeight,XLogP/JSON`
+            `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/property/IUPACName,MolecularFormula,MolecularWeight,XLogP,HBondDonorCount,HBondAcceptorCount,RotatableBondCount,TPSA/JSON`
         );
         const propData = await propRes.json();
         const props = propData.PropertyTable?.Properties?.[0] || {};
 
-        // 3D SDF / PDB coordinates URL from PubChem
-        const sdfUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/record/3D?record_type=sd&format=sdf`;
+        // 3D SDF coordinates URL from PubChem (record_type=3d is required)
+        const sdfUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/SDF?record_type=3d`;
 
         return NextResponse.json({
             success: true,
@@ -36,7 +36,11 @@ export async function GET(request: Request) {
             iupacName: props.IUPACName || "N/A",
             formula: props.MolecularFormula || "C22H22ClFN4O3",
             molecularWeight: props.MolecularWeight || "446.9",
-            xlogp: props.XLogP || "3.5",
+            xlogp: props.XLogP ?? "3.5",
+            hbd: props.HBondDonorCount ?? 1,
+            hba: props.HBondAcceptorCount ?? 5,
+            rotBonds: props.RotatableBondCount ?? 3,
+            tpsa: props.TPSA ?? "60.0",
             sdfUrl,
         });
     } catch (error) {
@@ -48,7 +52,11 @@ export async function GET(request: Request) {
             formula: "C22H22ClFN4O3",
             molecularWeight: "446.9",
             xlogp: "3.5",
-            sdfUrl: "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/123631/record/3D?record_type=sd&format=sdf",
+            hbd: 1,
+            hba: 5,
+            rotBonds: 3,
+            tpsa: "60.0",
+            sdfUrl: `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/123631/SDF?record_type=3d`,
         });
     }
 }

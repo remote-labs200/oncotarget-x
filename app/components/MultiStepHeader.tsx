@@ -15,10 +15,19 @@ export function MultiStepHeader({
   targetName,
 }: MultiStepHeaderProps) {
   const steps = [
-    { id: 3, label: "3D Docking & Candidates" },
-    { id: 4, label: "Efficacy Distribution" },
-    { id: 5, label: "Target Summary & Report" },
+    { id: 3, label: "3D Docking" },
+    { id: 7, label: "Dossier" },
+    { id: 6, label: "Bio Lab" },
+    { id: 4, label: "Efficacy" },
+    { id: 5, label: "Summary" },
   ];
+  const stepNames: Record<number, string> = {
+    3: "3D Docking & Ranked Drugs",
+    7: "Drug Dossier",
+    6: "Bioactivity Lab",
+    4: "Binding Energy Distribution",
+    5: "Target Summary & Export",
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/95 backdrop-blur-md">
@@ -37,21 +46,17 @@ export function MultiStepHeader({
               </span>
             </div>
             <p className="text-[11px] text-zinc-500">
-              Step {step} of 5:{" "}
-              {step === 3
-                ? "3D Docking & Ranked Drugs"
-                : step === 4
-                ? "Binding Energy Distribution"
-                : "Target Summary & Export"}
+              Step {step} of 7: {stepNames[step] ?? ""}
             </p>
           </div>
         </div>
 
         {/* Step Navigation Bar */}
         <div className="hidden lg:flex items-center gap-1 bg-zinc-100 p-1.5 rounded-2xl border border-zinc-200">
-          {steps.map((s) => {
+          {steps.map((s, i) => {
+            const order = [3, 7, 6, 4, 5];
             const isActive = step === s.id;
-            const isCompleted = step > s.id;
+            const isCompleted = order.indexOf(step) > order.indexOf(s.id);
             return (
               <button
                 key={s.id}
@@ -64,7 +69,7 @@ export function MultiStepHeader({
                     : "text-zinc-400 hover:text-zinc-700"
                 }`}
               >
-                <span>{s.id - 2}. {s.label}</span>
+                <span>{i + 1}. {s.label}</span>
               </button>
             );
           })}

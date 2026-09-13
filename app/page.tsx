@@ -6,11 +6,15 @@ import { LandingHero } from "./components/LandingHero";
 import { MultiStepHeader } from "./components/MultiStepHeader";
 import { MolecularViewer } from "./components/MolecularViewer";
 import { DrugTable } from "./components/DrugTable";
-import { ChemblBioactivityCard } from "./components/ChemblBioactivityCard";
 import { ExpressionChart } from "./components/ExpressionChart";
+import { BioactivityLab } from "./components/BioactivityLab";
+import { DrugDossier } from "./components/DrugDossier";
 import { GeminiAssistant } from "./components/GeminiAssistant";
 import { PatientReportModal } from "./components/PatientReportModal";
-import { Dna, Database, ShieldCheck, ArrowRight, CheckCircle2 } from "lucide-react";
+import { AgentBackground } from "./components/AgentBackground";
+import { PipelineLoader } from "./components/PipelineLoader";
+import { AgentChat } from "./components/AgentChat";
+import { ArrowRight } from "lucide-react";
 
 export default function Home() {
   // Step 1: Landing screen
@@ -25,6 +29,8 @@ export default function Home() {
     CANCER_TARGETS[selectedTargetKey] || CANCER_TARGETS["EGFR"];
 
   const [selectedDrugIndex, setSelectedDrugIndex] = useState<number>(0);
+  const [dossierDrugIndex, setDossierDrugIndex] = useState<number>(0);
+  const [candidatesCollapsed, setCandidatesCollapsed] = useState<boolean>(false);
   const [showReportModal, setShowReportModal] = useState<boolean>(false);
 
   const [customProfile, setCustomProfile] = useState<{
@@ -97,104 +103,24 @@ export default function Home() {
     );
   }
 
-  // 2. Loading Simulation Screen
+  // 2. Pipeline loader — same timeouts → same step 3 handoff.
   if (step === 2) {
     return (
-      <div className="min-h-screen bg-white text-zinc-900 flex flex-col items-center justify-center px-4 selection:bg-cyan-500 selection:text-white">
-        <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-zinc-50 p-8 shadow-2xl text-center space-y-6">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-xl shadow-cyan-500/25">
-            <Dna className="h-8 w-8 text-white animate-spin" />
-          </div>
-
-          <div>
-            <h2 className="text-xl font-extrabold text-zinc-900 mb-1">
-              Executing 10s AI Docking Pipeline
-            </h2>
-            <p className="text-xs text-zinc-500 font-mono">
-              Target: {selectedTargetKey} | Case: {customProfile?.patientId}
-            </p>
-          </div>
-
-          <div className="space-y-3 text-left bg-white p-4 rounded-2xl border border-zinc-200 text-xs">
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                {loadingStage >= 1 ? (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                ) : (
-                  <div className="h-4 w-4 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin"></div>
-                )}
-                <strong className="text-zinc-800">Fetching FDA Drugs from PubChem</strong>
-              </span>
-              <span className="text-[10px] text-zinc-400">CID 3D SDF</span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                {loadingStage >= 2 ? (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                ) : loadingStage === 1 ? (
-                  <div className="h-4 w-4 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin"></div>
-                ) : (
-                  <div className="h-4 w-4 rounded-full bg-zinc-200"></div>
-                )}
-                <strong className="text-zinc-800">Querying ChEMBL Bioactivity API</strong>
-              </span>
-              <span className="text-[10px] text-zinc-400">IC₅₀ / Kᵢ</span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                {loadingStage >= 3 ? (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                ) : loadingStage === 2 ? (
-                  <div className="h-4 w-4 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin"></div>
-                ) : (
-                  <div className="h-4 w-4 rounded-full bg-zinc-200"></div>
-                )}
-                <strong className="text-zinc-800">Loading PDB 3D Crystal Structure</strong>
-              </span>
-              <span className="text-[10px] text-zinc-400">PDB: {target.pdbId}</span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                {loadingStage >= 4 ? (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                ) : loadingStage === 3 ? (
-                  <div className="h-4 w-4 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin"></div>
-                ) : (
-                  <div className="h-4 w-4 rounded-full bg-zinc-200"></div>
-                )}
-                <strong className="text-zinc-800">Protein-Ligand Docking & Scoring</strong>
-              </span>
-              <span className="text-[10px] text-zinc-400">RDKit Matrix</span>
-            </div>
-          </div>
-
-          <div className="pt-2">
-            <div className="h-2 w-full bg-zinc-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 transition-all duration-500"
-                style={{
-                  width:
-                    loadingStage === 0
-                      ? "25%"
-                      : loadingStage === 1
-                      ? "50%"
-                      : loadingStage === 2
-                      ? "75%"
-                      : "100%",
-                }}
-              ></div>
-            </div>
-          </div>
-        </div>
+      <div className="min-h-screen bg-[#f7fafc] text-zinc-900 flex items-center justify-center px-4 py-10">
+        <AgentBackground />
+        <PipelineLoader
+          loadingStage={loadingStage}
+          targetName={selectedTargetKey}
+          pdbId={target.pdbId}
+          patientId={customProfile?.patientId}
+        />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-zinc-950 font-sans selection:bg-cyan-500 selection:text-white flex flex-col justify-between">
+    <div className="min-h-screen bg-[#f7fafc] text-zinc-950 font-sans selection:bg-cyan-500 selection:text-white flex flex-col justify-between relative">
+      <AgentBackground />
       {/* Multi-Step Header with Navigation */}
       <MultiStepHeader
         step={step}
@@ -205,15 +131,24 @@ export default function Home() {
 
       {/* Main Container */}
       <main className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8 space-y-8 flex-1">
-        {/* 3rd Screen: 3D Molecular Viewer + Ranked Drugs + ChEMBL */}
+        {/* 3rd Screen: 3D Molecular Viewer + Collapsible Ranked Drugs (fills ~90% of page) */}
         {step === 3 && (
-          <div className="space-y-6 animate-fadeIn">
+          <div className="animate-fadeIn relative">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-7">
+              <div className={candidatesCollapsed ? "lg:col-span-11" : "lg:col-span-9"}>
                 <MolecularViewer
                   currentDrug={currentDrug}
                   targetName={target.name}
                   pdbId={target.pdbId}
+                  tall={candidatesCollapsed}
+                  drugRank={selectedDrugIndex + 1}
+                  drugTotal={target.drugs.length}
+                  onPrevDrug={() => setSelectedDrugIndex((i) => (i - 1 + target.drugs.length) % target.drugs.length)}
+                  onNextDrug={() => setSelectedDrugIndex((i) => (i + 1) % target.drugs.length)}
+                  onOpenDossier={() => {
+                    setDossierDrugIndex(selectedDrugIndex);
+                    setStep(7);
+                  }}
                 />
               </div>
 
@@ -221,39 +156,50 @@ export default function Home() {
                 target={target}
                 selectedDrugIndex={selectedDrugIndex}
                 onSelectDrug={setSelectedDrugIndex}
+                onOpenDrug={(i) => {
+                  setDossierDrugIndex(i);
+                  setStep(7);
+                }}
+                collapsed={candidatesCollapsed}
+                onToggleCollapse={() => setCandidatesCollapsed((v) => !v)}
               />
             </div>
 
-            <div className="w-full">
-              <ChemblBioactivityCard drugName={currentDrug.name} />
-            </div>
-
-            <div className="flex justify-between pt-6 border-t border-zinc-200">
+            {/* floating mini-nav — bottom-left, chat owns bottom-right */}
+            <div className="fixed bottom-5 left-5 z-40 flex items-center gap-1.5 rounded-2xl border border-zinc-200 bg-white/90 p-1.5 shadow-xl backdrop-blur">
               <button
                 onClick={() => setStep(1)}
-                className="rounded-xl bg-zinc-100 px-5 py-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-200 transition cursor-pointer"
+                title="Back to input"
+                className="rounded-xl px-3 py-2 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 transition cursor-pointer"
               >
-                ← Back to Input
+                ←
+              </button>
+              <button
+                onClick={() => setStep(6)}
+                title="Bioactivity Lab"
+                className="rounded-xl px-3 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition cursor-pointer"
+              >
+                Lab
               </button>
               <button
                 onClick={() => setStep(4)}
-                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-2.5 text-xs font-bold text-white hover:from-cyan-600 hover:to-blue-700 transition shadow-md shadow-cyan-500/20 cursor-pointer"
+                title="Next: efficacy"
+                className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-2 text-xs font-bold text-white shadow cursor-pointer"
               >
-                <span>Next: Efficacy Distribution</span>
-                <ArrowRight className="h-4 w-4" />
+                →
               </button>
             </div>
           </div>
         )}
 
-        {/* 4th Screen: Compound Efficacy & Binding Score Distribution */}
+        {/* 4th Screen: Full Efficacy Report */}
         {step === 4 && (
           <div className="space-y-6 animate-fadeIn">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               <ExpressionChart target={target} />
             </div>
 
-            <div className="flex justify-between pt-6 border-t border-zinc-200 max-w-4xl mx-auto">
+            <div className="flex justify-between pt-6 border-t border-zinc-200 max-w-5xl mx-auto">
               <button
                 onClick={() => setStep(3)}
                 className="rounded-xl bg-zinc-100 px-5 py-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-200 transition cursor-pointer"
@@ -271,30 +217,116 @@ export default function Home() {
           </div>
         )}
 
-        {/* 5th Screen: Target Summary + Gemini AI + Download Report */}
+        {/* 5th Screen: Complete Target Summary + Gemini AI + Download Report */}
         {step === 5 && (
-          <div className="space-y-6 animate-fadeIn max-w-4xl mx-auto">
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-6 shadow-xl space-y-4">
-              <h3 className="text-lg font-bold text-zinc-900">
-                Target Summary: {target.fullName} ({target.name})
-              </h3>
-              <p className="text-sm text-zinc-700 leading-relaxed">
-                {target.description}
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-zinc-200 text-xs">
-                <div>
-                  <span className="text-zinc-500 block mb-1">Primary Pathway</span>
-                  <strong className="text-zinc-900">{target.pathway}</strong>
+          <div className="space-y-6 animate-fadeIn max-w-5xl mx-auto">
+            <div className="rounded-3xl border border-white bg-white/80 backdrop-blur-xl p-6 shadow-xl space-y-5 relative overflow-hidden">
+              <div className="scanline" />
+              <div>
+                <p className="font-mono text-[11px] text-cyan-700 font-bold">CASE {customProfile?.patientId ?? "PT-2026"} · {customProfile?.mutationType ?? target.name}</p>
+                <h3 className="text-xl font-extrabold text-zinc-900">
+                  {target.fullName} ({target.name})
+                </h3>
+                <p className="text-sm text-zinc-600 leading-relaxed mt-1">
+                  {target.description}
+                </p>
+              </div>
+              {/* stat grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: "PDB structure", value: target.pdbId },
+                  { label: "Pathway", value: target.pathway.split("/")[0].trim() },
+                  { label: "Mutation freq.", value: target.mutationFrequency.split("(")[0].trim() },
+                  { label: "Compounds screened", value: String(target.drugs.length) },
+                  { label: "Top compound", value: `${currentDrug.name} (${currentDrug.bindingEnergy})` },
+                  { label: "Top K_d", value: `${currentDrug.affinityScore} nM` },
+                  { label: "Status", value: currentDrug.fdaStatus.split(" ").slice(0, 2).join(" ") },
+                  { label: "Phase", value: currentDrug.clinicalPhase },
+                ].map((s, i) => (
+                  <div key={s.label} className="animate-fadeIn rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm" style={{ animationDelay: `${i * 0.05}s` }}>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">{s.label}</p>
+                    <p className="mt-0.5 truncate text-[13px] font-bold text-zinc-900" title={s.value}>{s.value}</p>
+                  </div>
+                ))}
+              </div>
+              {/* pipeline recap */}
+              <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-emerald-50/70 border border-emerald-200 px-4 py-3 font-mono text-[11px] text-emerald-800">
+                <span>PubChem ✓</span><span>→</span>
+                <span>ChEMBL ✓</span><span>→</span>
+                <span>PDB {target.pdbId} ✓</span><span>→</span>
+                <span>RDKit ΔG ✓</span><span>→</span>
+                <strong>Report ready</strong>
+              </div>
+
+              {/* key findings */}
+              <div className="rounded-2xl border border-cyan-200 bg-gradient-to-br from-cyan-50/70 to-blue-50/50 p-4">
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-cyan-800 mb-2">Key findings</h4>
+                <ul className="space-y-1.5 text-[13px] text-zinc-700 leading-relaxed">
+                  {(() => {
+                    const ranked = [...target.drugs].sort((a, b) => parseFloat(a.bindingEnergy) - parseFloat(b.bindingEnergy));
+                    const hits = ranked.filter((d) => parseFloat(d.bindingEnergy) <= -9.0);
+                    const avg = ranked.reduce((s, d) => s + parseFloat(d.bindingEnergy), 0) / ranked.length;
+                    return (
+                      <>
+                        <li><strong className="text-zinc-900">{ranked[0]?.name} ({ranked[0]?.bindingEnergy})</strong> is the lead repurposing candidate — strongest predicted binding to {target.name}.</li>
+                        <li><strong className="text-emerald-700">{hits.length}/{ranked.length} compounds</strong> clear the −9.0 kcal/mol bar (mean {avg.toFixed(1)}).</li>
+                        <li>All hits are already <strong>FDA-approved</strong> ({ranked.map((d) => d.fdaStatus.split(" ")[1] ?? "").filter(Boolean).slice(0, 3).join(", ")}{ranked.length > 3 ? "…" : ""}) — repurposing cuts years off development.</li>
+                      </>
+                    );
+                  })()}
+                </ul>
+              </div>
+
+              {/* full ranking */}
+              <div>
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-zinc-500 mb-2">Full ranking — all compounds</h4>
+                <div className="overflow-hidden rounded-2xl border border-zinc-200">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-zinc-50 text-left text-[10px] uppercase tracking-wider text-zinc-400">
+                        <th className="px-3 py-2">#</th>
+                        <th className="px-3 py-2">Compound</th>
+                        <th className="px-3 py-2">ΔG</th>
+                        <th className="px-3 py-2">K_d</th>
+                        <th className="px-3 py-2 hidden sm:table-cell">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-100 bg-white">
+                      {[...target.drugs]
+                        .sort((a, b) => parseFloat(a.bindingEnergy) - parseFloat(b.bindingEnergy))
+                        .map((d, i) => (
+                          <tr key={d.name} className={d.name === currentDrug.name ? "bg-cyan-50/60" : ""}>
+                            <td className="px-3 py-2 font-bold text-zinc-400">{i + 1}</td>
+                            <td className="px-3 py-2 font-bold text-zinc-900">{d.name}</td>
+                            <td className="px-3 py-2 font-mono font-bold text-emerald-700">{d.bindingEnergy}</td>
+                            <td className="px-3 py-2 font-mono text-zinc-600">{d.affinityScore} nM</td>
+                            <td className="px-3 py-2 text-zinc-500 hidden sm:table-cell">{d.clinicalPhase}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
                 </div>
-                <div>
-                  <span className="text-zinc-500 block mb-1">Top Compound</span>
-                  <strong className="text-cyan-600">
-                    {currentDrug.name} ({currentDrug.bindingEnergy})
-                  </strong>
+              </div>
+
+              {/* method + limits */}
+              <div className="grid gap-3 sm:grid-cols-2 text-[12px] leading-relaxed">
+                <div className="rounded-2xl border border-zinc-200 bg-white p-4">
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-zinc-500 mb-1.5">How this ran</h4>
+                  <ol className="space-y-1 text-zinc-600">
+                    <li>1. PubChem 3D ligand structures fetched</li>
+                    <li>2. ChEMBL IC₅₀/Kᵢ assays cross-checked</li>
+                    <li>3. RCSB PDB {target.pdbId} pocket loaded</li>
+                    <li>4. RDKit ΔG matrix scored & ranked</li>
+                    <li>5. Gemini clinical read + this report</li>
+                  </ol>
                 </div>
-                <div>
-                  <span className="text-zinc-500 block mb-1">Regulatory Status</span>
-                  <strong className="text-emerald-600">{currentDrug.fdaStatus}</strong>
+                <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-700 mb-1.5">Limits & next steps</h4>
+                  <ul className="space-y-1 text-zinc-600">
+                    <li>• Scores are predictive — confirm with in-vitro binding.</li>
+                    <li>• Off-label use needs tumor-board sign-off.</li>
+                    <li>• Next: validate top hit, check resistance pathways.</li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -334,6 +366,23 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* 6th Screen: Dedicated Bioactivity Lab (all drugs) */}
+        {step === 6 && (
+          <BioactivityLab target={target} onBack={() => setStep(3)} />
+        )}
+
+        {/* 7th Screen: Dedicated Drug Dossier */}
+        {step === 7 && (
+          <DrugDossier
+            target={target}
+            drugIndex={dossierDrugIndex}
+            rank={dossierDrugIndex + 1}
+            onBack={() => setStep(3)}
+            onPrevDrug={() => setDossierDrugIndex((i) => (i - 1 + target.drugs.length) % target.drugs.length)}
+            onNextDrug={() => setDossierDrugIndex((i) => (i + 1) % target.drugs.length)}
+          />
+        )}
       </main>
 
       {/* Footer */}
@@ -350,6 +399,16 @@ export default function Home() {
         target={target}
         currentDrug={currentDrug}
       />
+
+      {/* Floating agent chat — knows the current run */}
+      {step >= 3 && (
+        <AgentChat
+          context={`Target: ${target.name} (${target.fullName}), PDB ${target.pdbId}, pathway ${target.pathway}, mutation frequency ${target.mutationFrequency}. Patient: ${customProfile?.patientId ?? "demo case"}, mutation ${customProfile?.mutationType ?? "n/a"}. Ranked compounds: ${[...target.drugs]
+            .sort((a, b) => parseFloat(a.bindingEnergy) - parseFloat(b.bindingEnergy))
+            .map((d, i) => `${i + 1}. ${d.name} ${d.bindingEnergy}, Kd ${d.affinityScore} nM (${d.fdaStatus}; ${d.mechanism})`)
+            .join("; ")}. Selected: ${currentDrug.name}.`}
+        />
+      )}
     </div>
   );
 }

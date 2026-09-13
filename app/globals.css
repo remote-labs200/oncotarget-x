@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #07090e;
-  --foreground: #ededed;
+  --background: #f7fafc;
+  --foreground: #090d16;
 }
 
 @theme inline {
@@ -12,15 +12,199 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #07090e;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
 }
+
+/* ---------- Agentic motion system (light) ---------- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(18px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes driftX {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(30px, -18px); }
+}
+@keyframes shimmerX {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+@keyframes scanY {
+  0% { top: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: calc(100% - 2px); opacity: 0; }
+}
+@keyframes blinkCaret {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes logIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes pingSoft {
+  0% { transform: scale(1); opacity: 0.7; }
+  80%, 100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes gradientPan {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes spinSlow {
+  to { transform: rotate(360deg); }
+}
+@keyframes gridPan {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 72px 36px, 72px 36px; }
+}
+
+.animate-fadeIn { animation: fadeIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-slideUp { animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-floatY { animation: floatY 6s ease-in-out infinite; }
+.animate-driftX { animation: driftX 11s ease-in-out infinite; }
+.animate-blink { animation: blinkCaret 1s step-end infinite; }
+.animate-logIn { animation: logIn 0.35s ease-out both; }
+.animate-spinSlow { animation: spinSlow 14s linear infinite; }
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.12s; }
+.stagger-3 { animation-delay: 0.2s; }
+.stagger-4 { animation-delay: 0.28s; }
+.stagger-5 { animation-delay: 0.36s; }
+.stagger-6 { animation-delay: 0.44s; }
+
+.agent-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(6, 182, 212, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(6, 182, 212, 0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 40%, transparent 100%);
+}
+
+/* animated canvas grid — slow drift so the viewport feels alive */
+.canvas-grid-anim {
+  animation: gridPan 6s linear infinite;
+}
+
+.text-gradient-agentic {
+  background: linear-gradient(90deg, #0891b2, #2563eb, #7c3aed, #0891b2);
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradientPan 7s ease infinite;
+}
+
+.shimmer-bar { position: relative; overflow: hidden; }
+.shimmer-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent);
+  animation: shimmerX 1.6s ease-in-out infinite;
+}
+
+.scanline {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #06b6d4, transparent);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.8);
+  animation: scanY 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.ping-dot { position: relative; }
+.ping-dot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: pingSoft 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.thinking-dot { animation: fadeIn 0.9s ease-in-out infinite alternate; }
+.thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ---------- Docking process (DeepSeek-inspired, light) ---------- */
+.stage-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #edf4fd; color: #3c5f8c;
+  padding: 7px 16px; border-radius: 30px;
+  font-weight: 500; font-size: 0.75rem;
+  border: 1px solid #d3e3f8;
+  transition: all 0.3s ease; opacity: 0.45;
+}
+.stage-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #b8cee8; transition: all 0.3s; }
+.stage-pill.active { background: #d4e8ff; color: #0d4b8c; border-color: #7aaff0; opacity: 1; font-weight: 700; box-shadow: 0 3px 12px rgba(60,120,220,0.18); }
+.stage-pill.active .dot { background: #2b7be4; box-shadow: 0 0 8px #2b7be4; animation: blinkCaret 1s infinite; }
+.stage-pill.done { background: #e5f8ed; color: #0a6b3a; border-color: #9ae0b0; opacity: 1; }
+.stage-pill.done .dot { background: #22a55e; }
+
+.node-track {
+  position: absolute; bottom: 18px; left: 20px; right: 20px;
+  height: 10px; background: #e2ecf9; border-radius: 20px;
+  overflow: visible; box-shadow: inset 0 1px 4px rgba(0,0,0,0.06);
+}
+.node-fill {
+  height: 100%; border-radius: 20px;
+  background: linear-gradient(90deg, #2b7be4, #8ab8ff);
+  box-shadow: 0 0 12px rgba(60,140,255,0.4);
+  transition: width 0.2s linear; position: relative; overflow: hidden;
+}
+.node-fill::after {
+  content: ""; position: absolute; inset: 0; width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+  animation: shimmerX 1.4s ease-in-out infinite;
+}
+.node-marker {
+  position: absolute; top: -4px; width: 3px; height: 18px;
+  background: #1f3a5e; opacity: 0.25; border-radius: 2px; transform: translateX(-50%);
+}
+.node-knob {
+  position: absolute; right: -9px; top: 50%; transform: translateY(-50%);
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; border: 3px solid #2b7be4;
+  box-shadow: 0 0 10px rgba(43,123,228,0.6);
+}
+
+.log-entry {
+  background: #fff; border-radius: 12px; padding: 8px 12px;
+  border: 1px solid #e2ebf6; font-size: 0.76rem; color: #1e3450;
+  line-height: 1.4; border-left: 4px solid #94b8e0;
+  animation: logIn 0.25s ease both;
+}
+.log-entry .step-tag {
+  display: inline-block; font-weight: 700; font-size: 0.6rem;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  background: #e9f0fc; padding: 2px 8px; border-radius: 20px;
+  color: #1f5aa8; margin-right: 6px;
+}
+.log-entry.fetch { border-left-color: #7c5cbf; }
+.log-entry.bio { border-left-color: #d48f3a; }
+.log-entry.struct { border-left-color: #3b8ef0; }
+.log-entry.dock { border-left-color: #3b9e6e; }
+.log-entry.accepted { border-left-color: #3b9e6e; background: #f5fdf9; }
+.log-entry.rejected { border-left-color: #c95d5d; background: #fef8f8; }
+.log-entry.final { border-left-color: #cf9f2e; background: #fffbf2; }
+
+.agent-bubble { animation: fadeIn 0.4s ease both; }
+.speaking-dots span { animation: fadeIn 0.8s ease-in-out infinite alternate; }
+.speaking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.speaking-dots span:nth-child(3) { animation-delay: 0.35s; }
