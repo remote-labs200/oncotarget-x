@@ -31,7 +31,9 @@ export function PatientReportModal({
             <h3 className="text-base font-bold text-zinc-900">
               Precision Oncology Patient Report
             </h3>
-            <span className="rounded-full bg-emerald-50 border border-emerald-500/25 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">auto-compiled</span>
+            <span className="rounded-full bg-emerald-50 border border-emerald-500/25 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+              auto-compiled
+            </span>
           </div>
           <button
             onClick={onClose}
@@ -76,7 +78,7 @@ export function PatientReportModal({
           <div>
             <span className="text-zinc-600">TOP RANKED OFF-LABEL THERAPY:</span>
             <div className="text-emerald-400 font-bold mt-1">
-              {currentDrug.name} — {currentDrug.bindingEnergy} ($K_d$:{" "}
+              {currentDrug.name} — {currentDrug.bindingEnergy} (K<sub>d</sub>:{" "}
               {currentDrug.affinityScore} nM)
             </div>
             <div className="text-zinc-600 mt-1">
@@ -87,17 +89,27 @@ export function PatientReportModal({
             <span className="text-zinc-600">FULL RANKING (ALL COMPOUNDS):</span>
             <div className="mt-1 divide-y divide-zinc-200">
               {[...target.drugs]
-                .sort((a, b) => parseFloat(a.bindingEnergy) - parseFloat(b.bindingEnergy))
+                .sort(
+                  (a, b) =>
+                    parseFloat(a.bindingEnergy) - parseFloat(b.bindingEnergy),
+                )
                 .map((d, i) => (
                   <div key={d.name} className="flex justify-between py-1">
-                    <span>{i + 1}. {d.name} <span className="text-zinc-400">({d.clinicalPhase})</span></span>
-                    <span className="font-bold">{d.bindingEnergy} · {d.affinityScore} nM</span>
+                    <span>
+                      {i + 1}. {d.name}{" "}
+                      <span className="text-zinc-400">({d.clinicalPhase})</span>
+                    </span>
+                    <span className="font-bold">
+                      {d.bindingEnergy} · {d.affinityScore} nM
+                    </span>
                   </div>
                 ))}
             </div>
           </div>
           <div className="flex justify-between border-t border-zinc-200 pt-2 text-zinc-500">
-            <span>PIPELINE: PubChem ✓ ChEMBL ✓ PDB {target.pdbId} ✓ RDKit ✓</span>
+            <span>
+              PIPELINE: PubChem ✓ ChEMBL ✓ PDB {target.pdbId} ✓ RDKit ✓
+            </span>
             <span>PATHWAY: {target.pathway}</span>
           </div>
         </div>

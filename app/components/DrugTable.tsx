@@ -81,7 +81,8 @@ export function DrugTable({
     <div className="animate-slideUp stagger-1 lg:col-span-3 rounded-2xl border border-white bg-white/80 backdrop-blur-xl shadow-lg flex flex-col overflow-hidden relative">
       <div className="flex items-center justify-between border-b border-zinc-100 px-3 py-2 bg-white/60">
         <h3 className="text-xs font-bold text-zinc-900">
-          Candidates <span className="font-mono text-cyan-700">({target.name})</span>
+          Candidates{" "}
+          <span className="font-mono text-cyan-700">({target.name})</span>
         </h3>
         <div className="flex items-center gap-1">
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-500/25 px-1.5 py-px text-[9px] font-semibold text-emerald-700">
@@ -130,6 +131,10 @@ export function DrugTable({
               <span className="shrink-0 rounded-md bg-emerald-50 px-1.5 py-px text-[10px] font-bold text-emerald-700 border border-emerald-500/25 font-mono">
                 {drug.bindingEnergy.replace(" kcal/mol", "")}
               </span>
+              <p className="text-xs text-zinc-500 truncate line-clamp-1">
+                {drug.indication?.split(" ").slice(0, 12).join(" ")}
+                {drug.indication?.length > 12 ? "..." : ""}
+              </p>
               <button
                 onClick={(e) => {
                   e.stopPropagation();

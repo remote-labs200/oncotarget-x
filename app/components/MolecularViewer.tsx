@@ -33,9 +33,23 @@ interface MolecularViewerProps {
 type BgTheme = "space" | "light" | "midnight";
 
 const THEMES: Record<BgTheme, { label: string; bg: string; dot: string }> = {
-  space: { label: "Space", bg: "#2b3442", dot: "bg-[#2b3442] border border-zinc-500" },
-  light: { label: "Light", bg: "white", dot: "bg-white border border-zinc-300" },
-  midnight: { label: "Midnight", bg: "#0a1a33", dot: "bg-[#0a1a33] border border-blue-800" },
+  // Default to midnight for wow factor against judges from 10 ft away
+  space: {
+    label: "Space",
+    bg: "#2b3442",
+    dot: "bg-[#2b3442] border border-zinc-500",
+  },
+  light: {
+    label: "Light",
+    bg: "white",
+    dot: "bg-white border border-zinc-300",
+  },
+  // Keep light as fallback but midnight is default
+  midnight: {
+    label: "Midnight",
+    bg: "#0a1a33",
+    dot: "bg-[#0a1a33] border border-blue-800",
+  },
 };
 
 export function MolecularViewer({
@@ -53,7 +67,7 @@ export function MolecularViewer({
   const [viewerMode, setViewerMode] = useState<
     "cartoon" | "stick" | "sphere" | "surface"
   >("cartoon");
-  const [theme, setTheme] = useState<BgTheme>("light");
+  const [theme, setTheme] = useState<BgTheme>("midnight");
   const [gridOn, setGridOn] = useState<boolean>(true);
   const [spinning, setSpinning] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -63,6 +77,8 @@ export function MolecularViewer({
     resolution: number;
   } | null>(null);
   const viewerInstanceRef = useRef<any>(null);
+
+
 
   // Fetch real PDB metadata
   useEffect(() => {
@@ -91,7 +107,7 @@ export function MolecularViewer({
     }
   }, [viewerMode]);
 
-  // Background theme switch (no reload)
+
   useEffect(() => {
     const v = viewerInstanceRef.current;
     if (!v) return;
@@ -149,7 +165,11 @@ export function MolecularViewer({
           const sdfRes = await fetch(sdfUrl);
           const sdfData = sdfRes.ok
             ? await sdfRes.text()
-            : await (await fetch(`https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${pubChemId}/SDF`)).text();
+            : await (
+                await fetch(
+                  `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${pubChemId}/SDF`,
+                )
+              ).text();
           if (isMounted && sdfData) {
             const ligandModel = viewer.addModel(sdfData, "sdf");
             if (ligandModel) {
@@ -158,17 +178,18 @@ export function MolecularViewer({
                 {
                   stick: { colorscheme: "cyanCarbon", radius: 0.35 },
                   sphere: { scale: 0.45, colorscheme: "cyanCarbon" },
-                }
+                },
               );
+
             }
           }
         } catch (ligandErr) {
           console.warn("Could not load ligand:", ligandErr);
         }
 
-        viewer.zoomTo({ model: 1 });
+        viewer.zoomTo();
         viewer.render();
-        applyStandardZoom(viewer);
+        viewer.zoom(0.85);
         try {
           viewer.spin("y", 1);
         } catch {}
@@ -197,17 +218,23 @@ export function MolecularViewer({
         // PyMOL-like: thick smooth tubes, spectrum colored
         proteinModel.setStyle(
           {},
-          { cartoon: { color: "spectrum", thickness: 0.7, arrows: true } }
+          { cartoon: { color: "spectrum", thickness: 0.7, arrows: true } },
         );
       } else if (mode === "stick") {
-        proteinModel.setStyle({}, { stick: { colorscheme: "greyCarbon", radius: 0.25 } });
+        proteinModel.setStyle(
+          {},
+          { stick: { colorscheme: "greyCarbon", radius: 0.25 } },
+        );
       } else if (mode === "sphere") {
         proteinModel.setStyle(
           {},
-          { sphere: { scale: 0.3, colorscheme: "amino" } }
+          { sphere: { scale: 0.3, colorscheme: "amino" } },
         );
       } else if (mode === "surface") {
-        proteinModel.setStyle({}, { cartoon: { color: "white", opacity: 0.25 } });
+        proteinModel.setStyle(
+          {},
+          { cartoon: { color: "white", opacity: 0.25 } },
+        );
         viewer.addSurface("VDW", { opacity: 0.7, color: "cyan" }, { model: 0 });
       }
     }
@@ -219,7 +246,7 @@ export function MolecularViewer({
         {
           stick: { colorscheme: "cyanCarbon", radius: 0.35 },
           sphere: { scale: 0.45, colorscheme: "cyanCarbon" },
-        }
+        },
       );
     }
 
@@ -260,7 +287,9 @@ export function MolecularViewer({
   const gridColor = dark ? "rgba(120,180,255,0.10)" : "rgba(6,182,212,0.10)";
 
   return (
-    <div className={`animate-slideUp lg:col-span-7 rounded-3xl bg-white/80 border border-white backdrop-blur-xl p-5 sm:p-6 shadow-[0_20px_60px_-20px_rgba(6,182,212,0.3)] relative overflow-hidden flex flex-col ${tall ? "h-[calc(100vh-120px)] min-h-[680px]" : "h-[calc(100vh-190px)] min-h-[620px]"}`}>
+    <div
+      className={`animate-slideUp lg:col-span-7 rounded-3xl bg-white/80 border border-white backdrop-blur-xl p-5 sm:p-6 shadow-[0_20px_60px_-20px_rgba(6,182,212,0.3)] relative overflow-hidden flex flex-col ${tall ? "h-[calc(100vh-120px)] min-h-[680px]" : "h-[calc(100vh-190px)] min-h-[620px]"}`}
+    >
       <div className="scanline" />
 
       {/* BIG interactive header */}
@@ -271,11 +300,14 @@ export function MolecularViewer({
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-cyan-700">
-            Stage 3 · Docking {drugRank && drugTotal ? `· Drug ${drugRank} of ${drugTotal}` : ""}
+            Stage 3 · Docking{" "}
+            {drugRank && drugTotal ? `· Drug ${drugRank} of ${drugTotal}` : ""}
           </p>
           <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-zinc-900 leading-tight">
             {currentDrug.name}{" "}
-            <span className="font-mono text-sm font-bold text-emerald-600">{currentDrug.bindingEnergy}</span>
+            <span className="font-mono text-sm font-bold text-emerald-600">
+              {currentDrug.bindingEnergy}
+            </span>
           </h2>
           <p className="text-xs text-zinc-500 truncate max-w-lg">
             {targetName} · PDB {pdbId}
@@ -285,17 +317,29 @@ export function MolecularViewer({
         {/* drug stepper */}
         {onPrevDrug && onNextDrug && (
           <div className="flex items-center gap-1 rounded-2xl border border-zinc-200 bg-white p-1 shadow-sm">
-            <button onClick={onPrevDrug} title="Previous drug" className="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 transition cursor-pointer">
+            <button
+              onClick={onPrevDrug}
+              title="Previous drug"
+              className="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 transition cursor-pointer"
+            >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <span className="px-1 font-mono text-xs font-bold text-zinc-700 tabular-nums">
               {drugRank}/{drugTotal}
             </span>
-            <button onClick={onNextDrug} title="Next drug" className="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 transition cursor-pointer">
+            <button
+              onClick={onNextDrug}
+              title="Next drug"
+              className="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 transition cursor-pointer"
+            >
               <ChevronRight className="h-4 w-4" />
             </button>
             {onOpenDossier && (
-              <button onClick={onOpenDossier} title="Open full dossier" className="flex h-8 items-center gap-1 rounded-xl bg-zinc-900 px-2.5 text-[11px] font-bold text-white hover:bg-zinc-700 transition cursor-pointer">
+              <button
+                onClick={onOpenDossier}
+                title="Open full dossier"
+                className="flex h-8 items-center gap-1 rounded-xl bg-zinc-900 px-2.5 text-[11px] font-bold text-white hover:bg-zinc-700 transition cursor-pointer"
+              >
                 Dossier <ArrowUpRight className="h-3.5 w-3.5" />
               </button>
             )}
@@ -303,16 +347,34 @@ export function MolecularViewer({
         )}
         {/* zoom */}
         <div className="flex items-center gap-1.5">
-          <button onClick={handleZoomIn} className="h-8 w-8 rounded-xl bg-zinc-900 hover:bg-zinc-700 text-sm text-white transition cursor-pointer" title="Zoom In">+</button>
-          <button onClick={handleZoomOut} className="h-8 w-8 rounded-xl bg-zinc-900 hover:bg-zinc-700 text-sm text-white transition cursor-pointer" title="Zoom Out">−</button>
-          <button onClick={handleResetView} className="h-8 rounded-xl bg-zinc-900 hover:bg-zinc-700 px-2.5 text-[11px] font-bold text-white transition cursor-pointer flex items-center gap-1" title="Reset view">
+          <button
+            onClick={handleZoomIn}
+            className="h-8 w-8 rounded-xl bg-zinc-900 hover:bg-zinc-700 text-sm text-white transition cursor-pointer"
+            title="Zoom In"
+          >
+            +
+          </button>
+          <button
+            onClick={handleZoomOut}
+            className="h-8 w-8 rounded-xl bg-zinc-900 hover:bg-zinc-700 text-sm text-white transition cursor-pointer"
+            title="Zoom Out"
+          >
+            −
+          </button>
+          <button
+            onClick={handleResetView}
+            className="h-8 rounded-xl bg-zinc-900 hover:bg-zinc-700 px-2.5 text-[11px] font-bold text-white transition cursor-pointer flex items-center gap-1"
+            title="Reset view"
+          >
             <RefreshCw className="h-3 w-3" /> Reset
           </button>
         </div>
       </div>
 
       {/* canvas */}
-      <div className={`relative flex-1 rounded-2xl border overflow-hidden shadow-inner ${dark ? "border-zinc-800" : "border-zinc-200"}`}>
+      <div
+        className={`relative flex-1 rounded-2xl border overflow-hidden shadow-inner ${dark ? "border-zinc-800" : "border-zinc-200"}`}
+      >
         {isLoading && (
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/85 backdrop-blur-sm gap-3">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent"></div>
@@ -320,7 +382,8 @@ export function MolecularViewer({
               rendering PDB {pdbId}…
             </span>
           </div>
-        )}
+        )}{" "}
+
         {/* PyMOL-style animated grid overlay */}
         {gridOn && (
           <div
@@ -336,25 +399,52 @@ export function MolecularViewer({
         <span className="absolute right-2 top-2 z-10 h-5 w-5 border-r-2 border-t-2 border-cyan-400/70 rounded-tr-lg pointer-events-none" />
         <span className="absolute bottom-2 left-2 z-10 h-5 w-5 border-b-2 border-l-2 border-cyan-400/70 rounded-bl-lg pointer-events-none" />
         <span className="absolute bottom-2 right-2 z-10 h-5 w-5 border-b-2 border-r-2 border-cyan-400/70 rounded-br-lg pointer-events-none" />
-
-        <div ref={viewerContainerRef} className="absolute inset-0 w-full h-full" />
-
+        <div
+          ref={viewerContainerRef}
+          className="absolute inset-0 w-full h-full"
+        />
         {/* ligand readout */}
-        <div className={`absolute top-3 left-3 z-10 rounded-xl p-3 border backdrop-blur-md shadow-md pointer-events-none max-w-xs ${dark ? "bg-black/60 border-white/10" : "bg-white/90 border-zinc-200"}`}>
+        <div
+          className={`absolute top-3 left-3 z-10 rounded-xl p-3 border backdrop-blur-md shadow-md pointer-events-none max-w-xs ${dark ? "bg-black/60 border-white/10" : "bg-white/90 border-zinc-200"}`}
+        >
           <div className="text-[11px] font-mono text-cyan-500 font-semibold mb-1">
             LIGAND · {currentDrug.name}
           </div>
-          <div className={`text-[10px] space-y-0.5 ${dark ? "text-zinc-300" : "text-zinc-700"}`}>
-            <div>Affinity <span className={`font-mono font-bold ${dark ? "text-white" : "text-black"}`}>{currentDrug.affinityScore} nM</span></div>
-            <div>Energy <span className={`font-mono font-bold ${dark ? "text-white" : "text-black"}`}>{currentDrug.bindingEnergy}</span></div>
+          <div
+            className={`text-[10px] space-y-0.5 ${dark ? "text-zinc-300" : "text-zinc-700"}`}
+          >
+            <div>
+              Affinity{" "}
+              <span
+                className={`font-mono font-bold ${dark ? "text-white" : "text-black"}`}
+              >
+                {currentDrug.affinityScore} nM
+              </span>
+            </div>
+            <div>
+              Energy{" "}
+              <span
+                className={`font-mono font-bold ${dark ? "text-white" : "text-black"}`}
+              >
+                {currentDrug.bindingEnergy}
+              </span>
+            </div>
             {pdbMeta && (
-              <div>Res <span className={`font-mono ${dark ? "text-white" : "text-black"}`}>{pdbMeta.resolution} Å · {pdbMeta.method}</span></div>
+              <div>
+                Res{" "}
+                <span
+                  className={`font-mono ${dark ? "text-white" : "text-black"}`}
+                >
+                  {pdbMeta.resolution} Å · {pdbMeta.method}
+                </span>
+              </div>
             )}
           </div>
         </div>
         {/* theme chip */}
         <div className="absolute bottom-3 left-3 z-10 rounded-full bg-black/50 backdrop-blur px-2.5 py-1 font-mono text-[10px] text-zinc-300 pointer-events-none">
-          {THEMES[theme].label} · {viewerMode}{spinning ? " · spinning" : ""}
+          {THEMES[theme].label} · {viewerMode}
+          {spinning ? " · spinning" : ""}
         </div>
       </div>
 
@@ -384,7 +474,9 @@ export function MolecularViewer({
               onClick={() => setTheme(t)}
               title={`${THEMES[t].label} background`}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer ${
-                theme === t ? "bg-zinc-900 text-white font-bold" : "text-zinc-500 hover:bg-zinc-100"
+                theme === t
+                  ? "bg-zinc-900 text-white font-bold"
+                  : "text-zinc-500 hover:bg-zinc-100"
               }`}
             >
               <span className={`h-3.5 w-3.5 rounded-full ${THEMES[t].dot}`} />
@@ -405,7 +497,10 @@ export function MolecularViewer({
           title="Toggle auto-rotate"
           className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition cursor-pointer shadow-sm ${spinning ? "bg-violet-500 text-white border-violet-500" : "bg-white text-zinc-500 border-zinc-200 hover:border-violet-300"}`}
         >
-          <Rotate3d className={`h-3.5 w-3.5 ${spinning ? "animate-spin" : ""}`} /> Spin
+          <Rotate3d
+            className={`h-3.5 w-3.5 ${spinning ? "animate-spin" : ""}`}
+          />{" "}
+          Spin
         </button>
 
         <a

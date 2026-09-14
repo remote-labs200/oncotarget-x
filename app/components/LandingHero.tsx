@@ -14,20 +14,16 @@ interface LandingHeroProps {
 }
 
 const MUTATIONS: Record<string, string> = {
-  EGFR: "Exon 19 Deletion (L747_P753insS)",
   BRAF: "V600E Kinase Domain Mutation",
-  TP53: "R273H DNA-Binding Mutation",
-  KRAS: "G12C Covalent Switch Mutation",
-  ALK: "EML4-ALK Fusion Variant 1",
 };
 
 export function LandingHero({ onStartAnalysis, onQuickDemo }: LandingHeroProps) {
   const [patientId, setPatientId] = useState<string>("PT-2026-LN");
-  const [selectedGene, setSelectedGene] = useState<string>("EGFR");
+  const [selectedGene, setSelectedGene] = useState<string>("BRAF");
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [fileName, setFileName] = useState<string | null>(null);
 
-  const activeTarget = CANCER_TARGETS[selectedGene] || CANCER_TARGETS["EGFR"];
+  const activeTarget = CANCER_TARGETS[selectedGene] || Object.values(CANCER_TARGETS)[0];
 
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();

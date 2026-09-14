@@ -155,11 +155,7 @@ export function TumorProfileInput({
                 onChange={(e) => setSelectedGene(e.target.value)}
                 className="w-full rounded-xl bg-white border border-zinc-200 px-3 py-2 text-xs text-cyan-400 font-bold focus:border-cyan-500 focus:outline-none"
               >
-                <option value="EGFR">EGFR (Epidermal Growth Factor)</option>
                 <option value="BRAF">BRAF (Serine/Threonine Kinase)</option>
-                <option value="TP53">TP53 (Tumor Suppressor)</option>
-                <option value="KRAS">KRAS (GTPase Oncogene)</option>
-                <option value="ALK">ALK (Anaplastic Lymphoma Kinase)</option>
               </select>
             </div>
 
