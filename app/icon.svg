@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="OncoTarget-X">
+  <rect width="64" height="64" rx="14" fill="#0f172a" />
+  <path d="M18 14h28v8H36v28h-8V22H18z" fill="#22d3ee" />
+  <circle cx="47" cy="45" r="7" fill="#34d399" />
+</svg>
